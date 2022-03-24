@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <list version="1.0">
 	<fvm_meta theme_code="" is_biz="0" />
+	<theme id="bunny" name="It's Happy Bunny" cc_theme_id="bunny" enable="N" />
+	<theme id="domo" name="Domo" cc_theme_id="domo" enable="N" />
+	<theme id="monkeytalk" name="SuperRica &amp; Rashy" cc_theme_id="monkeytalk" enable="N" />
+	<theme id="sf" name="Street Fighter" cc_theme_id="sf" enable="N" />
+	<theme id="politic" name="Politics &amp; Celebrity" thumb="hilary-stand.swf" cc_theme_id="politic" />
+	<theme id="fullenergy" name="Full Energy" thumb="" cc_theme_id="fullenergy"/>
+	<theme id="akon" name="AKON" cc_theme_id="akon" />
 	<theme id="monstermsh" name="Monsters Mayhem" thumb="" cc_theme_id="monstermsh" />
         <theme id="business" name="Business Friendly" thumb="" cc_theme_id="business" />
         <theme id="whiteboard" name="Whiteboard Animation" thumb="" cc_theme_id="whiteboard" />
