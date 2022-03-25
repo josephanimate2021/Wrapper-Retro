@@ -8,7 +8,7 @@ const asset = require("./main");
 const starter = require("../starter/main");
 const http = require("http");
 
-async function listAssets(data, makeZip) {
+async function getAssets(data, makeZip) {
 	var xmlString;
 	switch (data.type) {
 		case "char": {
@@ -95,7 +95,7 @@ module.exports = function (req, res, url) {
 		case "GET": {
 			var q = url.query;
 			if (q.movieId && q.type) {
-				listAssets(q, makeZip).then((buff) => {
+				getAssets(q, makeZip).then((buff) => {
 					const type = makeZip ? "text/xml" : "application/zip";
 					res.setHeader("Content-Type", type);
 					res.end(buff);
@@ -105,7 +105,7 @@ module.exports = function (req, res, url) {
 		}
 		case "POST": {
 			loadPost(req, res)
-				.then(([data]) => listAssets(data, makeZip))
+				.then(([data]) => getAssets(data, makeZip))
 				.then((buff) => {
 					const type = makeZip ? "text/xml" : "application/zip";
 					res.setHeader("Content-Type", type);
