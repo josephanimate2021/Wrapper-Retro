@@ -87,12 +87,11 @@ module.exports = function (req, res, url) {
 	switch (url.pathname) {
 		case "/goapi/getUserAssets/":
 			break;
+		case "/goapi/getCommunityAssets/":
+			break;
 		case "/goapi/getUserAssetsXml/":
                         makeZip = false;
 			break;	
-		case "/goapi/clientbug/":
-			console.log('Something may be missing or broken in the github repo causing your thing to load. Please report this issue now!');
-			break;
 		default: 
 		return;
 	}
