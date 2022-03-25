@@ -1,122 +1,120 @@
-const loadPost = require('../request/post_body');
+var files;
+const loadPost = require("../misc/post_body");
 const header = process.env.XML_HEADER;
-const asset = require('./main');
+const fUtil = require("../misc/file");
+const nodezip = require("node-zip");
+const base = Buffer.alloc(1, 0);
+const asset = require("./main");
+const starter = require("../starter/main");
+const http = require("http");
 
-async function listAssets(data) {
-	var response, files;
+async function listAssets(data, makeZip) {
+	var xmlString;
 	switch (data.type) {
 		case "char": {
-			var themeId;
-			switch (data.themeId) { // fix theme id
-				case "custom": {
-					themeId = "family";
-					break;
-				}
-				case "action": {
-					themeId = "cc2";
-					break;
-				}
-				default: {
-					themeId = data.themeId;
-					break;
-				}
-			}
-			files = asset.list("char", 0, themeId);
-			response = `${header}<ugc more="0">${files
-				.map(v => `<char id="${v.id}" enc_asset_id="${v.id}" name="${v.title}" cc_theme_id="${v.themeId}" thumbnail_url="/assets/${v.id}.png" copyable="Y"><tags>${v.tags}</tags></char>`)
+			const chars = await asset.chars(data.themeId);
+			xmlString = `${header}<ugc more="0">${chars
+				.map(
+					(v) =>
+						`<char id="${v.id}" name="Untitled" cc_theme_id="${v.theme}" thumbnail_url="http://localhost:4343/char_thumbs/${v.id}.png" copyable="Y"><tags/></char>`
+				)
 				.join("")}</ugc>`;
 			break;
 		}
 		case "bg": {
-			files = asset.list("bg");
-			response = {
-				"status": "ok",
-				"data": {
-					"xml": `${header}<ugc more="0">${files
-						.map(v => `<background subtype="0" id="${v.file}" enc_asset_id="${v.id}" name="${v.title}" enable="Y" asset_url="/assets/${v.file}"/>`)
-						.join("")}</ugc>`
-				}
-			};
-			break;
-		}
-		case "movie": {
-			files = asset.list("movie");
-			response = {
-				"status": "ok",
-				"data": {
-					"xml": `${header}<ugc more="0">${files
-						.map(v => `<movie id="${v.id}" enc_asset_id="${v.id}" path="/_SAVED/${v.id}" numScene="1" title="${v.name}" thumbnail_url="/assets/${v.id}.png"><tags></tags></movie>`)
-						.join("")}</ugc>`
-				}
-			};
-			break;
-		}
-		case "prop": {
-			if (data.subtype) {
-				files = asset.list("prop", "video");
-				response = {
-					"status": "ok",
-					"data": {
-						"xml": `${header}<ugc more="0">${files
-							.map(v => `<prop subtype="video" id="${v.file}" enc_asset_id="${v.id}" name="${v.title}" enable="Y" holdable="0" headable="0" placeable="1" facing="left" width="0" height="0" asset_url="/api_v2/assets/${v.file}"/>`)
-							.join("")}</ugc>`
-					}
-				};
-			} else {
-				files = asset.list("prop");
-				response = {
-					"status": "ok",
-					"data": {
-						"xml": `${header}<ugc more="0">${files
-							.map(v => `<prop subtype="0" id="${v.file}" enc_asset_id="${v.id}" name="${v.title}" enable="Y" holdable="0" headable="0" placeable="1" facing="left" width="0" height="0" asset_url="/api_v2/assets/${v.file}"/>`)
-							.join("")}</ugc>`
-					}
-				};
-			}
+			files = asset.list(data.movieId, "bg");
+			xmlString = `${header}<ugc more="0">${files
+				.map((v) => `<background id="${v.id}" name="${v.name}" enable="Y"/>`)
+				.join("")}</ugc>`;
 			break;
 		}
 		case "sound": {
-			files = asset.list("sound");
-			response = {
-				"status": "ok",
-				"data": {
-					"xml": `${header}<ugc more="0">${files
-						.map(v => `<sound subtype="${v.subtype}" id="${v.file}" enc_asset_id="${v.id}" name="${v.title}" enable="Y" duration="${v.duration}" downloadtype="progressive"/>`)
-						.join("")}</ugc>`
-				}
-			};
+			files = asset.list(data.movieId, "sound");
+			xmlString = `${header}<ugc more="0">${files
+				.map((v) =>`<sound subtype="${v.subtype}" id="${v.id}" name="${v.name}" enable="Y" duration="${v.duration}" downloadtype="progressive"/>`)
+				.join("")}</ugc>`;
 			break;
 		}
-		default: { // no type? send a blank response
-			response = {
-				"status": "ok",
-				"data": {
-					"xml": `${header}<ugc more="0"></ugc>`
-				}
-			};
+
+		case "movie": {
+			files = starter.list()
+			xmlString = `${header}<ugc more="0">${files
+				.map((v) =>`<movie id="${v.id}" path="/_SAVED/${v.id}" numScene="1" title="${v.name}" thumbnail_url="/starter_thumbs/${v.id}.png"><tags></tags></movie>`)
+				.join("")}</ugc>`;
 			break;
 		}
-	};
-	return response;
+		case "prop":
+		default: {
+			files = asset.list(data.movieId, "prop");
+			xmlString = `${header}<ugc more="0">${files
+				.map((v) =>`<prop id="${v.id}" name="${v.name}" enable="Y" holdable="0" headable="0" placeable="1" facing="left" width="0" height="0" asset_url="/api_v2/assets/${v.name}"/>`)
+				.join("")}</ugc>`;
+			break;
+		}
+	}
+
+	if (makeZip) {
+		const zip = nodezip.create();
+		fUtil.addToZip(zip, "desc.xml", Buffer.from(xmlString));
+
+		files.forEach((file) => {
+			switch (file.mode) {
+				case "bg":
+				case "movie":
+				case "sound":
+				case "effect":
+				case "prop": {
+					const buffer = asset.load(data.movieId, file.id);
+					fUtil.addToZip(zip, `${file.mode}/${file.id}`, buffer);
+					break;
+				}
+			}
+		});
+		return await zip.zip();
+	} else {
+		return Buffer.from(xmlString);
+	}
 }
 
+/**
+ * @param {http.IncomingMessage} req
+ * @param {http.ServerResponse} res
+ * @param {import("url").UrlWithParsedQuery} url
+ * @returns {boolean}
+ */
 module.exports = function (req, res, url) {
-	switch (url.path) {
-		case "/goapi/getCommunityAssets/": {
-			loadPost(req, res).then(data => listAssets(data.data)).then(a => {
-				res.setHeader("Content-Type", "application/json"), res.end(JSON.stringify(a));
-			});
-			return true;
+	var makeZip = true;
+	switch (url.pathname) {
+		case "/goapi/getCommunityAssets/":
 			break;
+		default: 
+		return;
+	}
+
+	switch (req.method) {
+		case "GET": {
+			var q = url.query;
+			if (q.movieId && q.type) {
+				listAssets(q, makeZip).then((buff) => {
+					const type = makeZip ? "text/xml" : "application/zip";
+					res.setHeader("Content-Type", type);
+					res.end(buff);
+				});
+				return true;
+			} else return;
 		}
-		case "/goapi/getUserAssetsXml/": {
-			loadPost(req, res).then(data => listAssets(data)).then(a => {
-				res.setHeader("Content-Type", "text/html; charset=UTF-8"), res.end(a);
-			});
+		case "POST": {
+			loadPost(req, res)
+				.then(([data]) => listAssets(data, makeZip))
+				.then((buff) => {
+					const type = makeZip ? "text/xml" : "application/zip";
+					res.setHeader("Content-Type", type);
+					if (makeZip) res.write(base);
+					res.end(buff);
+				});
 			return true;
-			break;
 		}
 		default:
 			return;
 	}
-}
+};
