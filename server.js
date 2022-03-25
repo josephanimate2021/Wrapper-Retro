@@ -13,6 +13,7 @@ const stl = require("./static/load");
 const stp = require("./static/page");
 const asl = require("./asset/load");
 const asL = require("./asset/list");
+const asG = require("./asset/get");
 const ast = require("./asset/thmb");
 const mvl = require("./movie/load");
 const mvL = require("./movie/list");
@@ -27,7 +28,7 @@ const sts = require("./starter/save");
 const stt = require("./starter/thmb");
 const url = require("url");
 
-const functions = [mvL, pmc, asl, chl, thl, thL, chs, chu, cht, asL, tsl, chr, ast, mvm, mvl, mvs, mvt, tsv, asu, mvu, stp, stl, sts, stt];
+const functions = [mvL, pmc, asl, chl, thl, thL, chs, chu, cht, asL, asG, tsl, chr, ast, mvm, mvl, mvs, mvt, tsv, asu, mvu, stp, stl, sts, stt];
 
 // Creates an HTTP server
 module.exports = http
