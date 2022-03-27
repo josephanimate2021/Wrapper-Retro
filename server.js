@@ -11,6 +11,7 @@ const mvu = require("./movie/upload");
 const asu = require("./asset/upload");
 const stl = require("./static/load");
 const stp = require("./static/page");
+const gen = require("./static/page-genorateId");
 const asl = require("./asset/load");
 const asL = require("./asset/list");
 const asG = require("./asset/get");
@@ -28,7 +29,7 @@ const sts = require("./starter/save");
 const stt = require("./starter/thmb");
 const url = require("url");
 
-const functions = [mvL, pmc, asl, chl, thl, thL, chs, chu, cht, asL, asG, tsl, chr, ast, mvm, mvl, mvs, mvt, tsv, asu, mvu, stp, stl, sts, stt];
+const functions = [mvL, pmc, asl, chl, thl, thL, chs, chu, cht, asL, asG, tsl, chr, ast, mvm, mvl, mvs, mvt, tsv, asu, mvu, stp, gen, stl, sts, stt];
 
 // Creates an HTTP server
 module.exports = http
