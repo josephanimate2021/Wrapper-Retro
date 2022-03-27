@@ -41,6 +41,7 @@ module.exports = function (req, res, url) {
 			params = {
 				flashvars: {
 					presaveId: presave,
+					year: "2009",
 				},
 				allowScriptAccess: "always",
 				allowFullScreen: "true",
